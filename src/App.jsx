@@ -254,7 +254,8 @@ const App = () => {
         </div>
 
         {/* CENTER: Visualization */}
-        <div className="center-panel" style={{ zoom: 0.6 + (zoom - 1) * 0.2 }}>
+        <div className="center-panel">
+          <div style={{ zoom: 0.6 + (zoom - 1) * 0.2 }}>
           {/* Variable cards */}
           <VariableCards variables={pv} />
 
@@ -306,6 +307,7 @@ const App = () => {
             spaceComplexity={spaceComplexity}
             error={analysisError}
           />
+          </div>
         </div>
 
         {/* RIGHT: Controls */}
