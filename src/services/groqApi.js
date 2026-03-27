@@ -1,6 +1,3 @@
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-
 const SYSTEM_PROMPT = `You are a code execution analyzer. Given code in any language, produce a step-by-step dry run AND a data flow chart.
 
 Return ONLY valid JSON (no markdown, no code fences) in this exact format:
@@ -51,14 +48,9 @@ Rules for flowchart:
 - Keep labels very short (max 20 chars)`;
 
 export async function analyzeCode(code, language) {
-  if (!GROQ_API_KEY) {
-    throw new Error('Groq API key not configured. Add VITE_GROQ_API_KEY to .env');
-  }
-
-  const response = await fetch(GROQ_API_URL, {
+  const response = await fetch('/api/groq', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -74,7 +66,7 @@ export async function analyzeCode(code, language) {
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(`Groq API error (${response.status}): ${err}`);
+    throw new Error(`API error (${response.status}): ${err}`);
   }
 
   const data = await response.json();
