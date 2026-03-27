@@ -1,7 +1,5 @@
 // Netlify serverless function for Groq API proxy
-// Keeps API key secure on the server side
-export async function handler(event) {
-  // Only allow POST
+const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -41,7 +39,9 @@ export async function handler(event) {
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: `Groq API request failed: ${error.message}` })
+      body: JSON.stringify({ error: 'Groq API request failed: ' + error.message })
     };
   }
-}
+};
+
+module.exports = { handler };
