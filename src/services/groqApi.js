@@ -1,0 +1,91 @@
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+
+const SYSTEM_PROMPT = `You are a code execution analyzer. Given code in any language, produce a step-by-step dry run AND a data flow chart.
+
+Return ONLY valid JSON (no markdown, no code fences) in this exact format:
+{
+  "steps": [
+    {
+      "line": <1-based line number being executed>,
+      "explanation": "<short explanation of what this line does>",
+      "code_snippet": "<the actual line of code>",
+      "variables": { "<varName>": "<currentValue>", ... },
+      "call_stack": ["<function names in call stack>"],
+      "activeCell": null,
+      "statusText": "<brief status like 'Entering loop' or ''>"
+    }
+  ],
+  "flowchart": {
+    "nodes": [
+      { "id": "n1", "label": "<short label>", "type": "<start|end|process|decision|loop|call|return>", "line": <line number> }
+    ],
+    "edges": [
+      { "from": "n1", "to": "n2", "label": "" }
+    ]
+  },
+  "console_output": "<what the program prints>",
+  "execution_flow": "<one-line summary>",
+  "time_complexity": "<Big-O time>",
+  "space_complexity": "<Big-O space>"
+}
+
+Rules for steps:
+- Walk through EVERY executed line in order, including loop iterations
+- Track ALL variables and their current values at each step
+- Keep explanations concise (under 15 words)
+- If the code works with arrays/matrices, use activeCell: {row, col} to highlight the current cell
+- Return 10-25 steps for typical code
+- Variables object should show ALL currently in-scope variables
+
+Rules for flowchart:
+- Create 6-15 nodes showing the logical flow of the code
+- Use "start" for the entry point and "end" for the exit/return
+- Use "decision" for if/else conditions
+- Use "loop" for for/while loops
+- Use "call" for function calls
+- Use "process" for assignments and computations
+- Use "return" for return statements
+- Each node "line" should map to the code line it represents
+- Connect nodes with edges showing execution flow
+- Keep labels very short (max 20 chars)`;
+
+export async function analyzeCode(code, language) {
+  if (!GROQ_API_KEY) {
+    throw new Error('Groq API key not configured. Add VITE_GROQ_API_KEY to .env');
+  }
+
+  const response = await fetch(GROQ_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: `Analyze this ${language} code step by step:\n\n${code}` }
+      ],
+      temperature: 0.1,
+      max_tokens: 6000,
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Groq API error (${response.status}): ${err}`);
+  }
+
+  const data = await response.json();
+  const content = data.choices[0].message.content;
+
+  // Parse response — strip markdown fences if model adds them
+  let cleaned = content.trim();
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+  }
+
+  const result = JSON.parse(cleaned);
+  return result;
+}
