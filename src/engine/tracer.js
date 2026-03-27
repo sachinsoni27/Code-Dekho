@@ -85,13 +85,12 @@ export function executeTraced(instrumentedCode) {
     // Create sandboxed execution using Function constructor
     // Provide __trace and mock console, block dangerous globals
     const safeCode = `
-      'use strict';
       ${instrumentedCode}
     `;
 
     const executor = new Function(
       '__trace', 'console', 'alert', 'fetch', 'XMLHttpRequest',
-      'WebSocket', 'Worker', 'importScripts', 'eval',
+      'WebSocket', 'Worker', 'importScripts', '_eval',
       safeCode
     );
 

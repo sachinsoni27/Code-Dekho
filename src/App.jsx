@@ -46,6 +46,7 @@ const App = () => {
   const [hoverLine, setHoverLine] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [spd, setSpd] = useState(3);
+  const [zoom, setZoom] = useState(3);
 
   // Variable / visualization state
   const [pv, setPv] = useState({});
@@ -56,7 +57,7 @@ const App = () => {
 
   // UI state
   const [spinning, setSpinning] = useState(false);
-  const [abt, setAbt] = useState('⚡ Analyze');
+  const [abt, setAbt] = useState('Analyze');
   const [showTemplates, setShowTemplates] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [engineMode, setEngineMode] = useState('');  // 'js-engine' or 'groq-api'
@@ -118,7 +119,7 @@ const App = () => {
 
     if (canUseJSEngine(lang)) {
       // ⚡ Browser-native JS engine — instant execution!
-      setAbt('⚡ Executing...');
+      setAbt('Executing...');
       setEngineMode('js-engine');
       try {
         // Use setTimeout(0) to let the UI update before blocking
@@ -126,7 +127,7 @@ const App = () => {
         const result = analyzeJS(trimmedCode);
         if (result.error && result.steps.length === 0) {
           setAnalysisError(result.error);
-          setAbt('⚡ Retry');
+          setAbt('Retry');
         } else {
           setSteps(result.steps);
           if (result.flowchart) setFlowData(result.flowchart);
@@ -139,10 +140,10 @@ const App = () => {
         }
       } catch (e) {
         setAnalysisError(e.message);
-        setAbt('⚡ Retry');
+        setAbt('Retry');
       } finally {
         setSpinning(false);
-        setAbt('⚡ Run');
+        setAbt('Run');
       }
     } else {
       // 🌐 Groq API for Python/Java/C++
@@ -160,10 +161,10 @@ const App = () => {
       } catch (e) {
         console.error('Analysis failed:', e.message);
         setAnalysisError(e.message);
-        setAbt('⚡ Retry');
+        setAbt('Retry');
       } finally {
         setSpinning(false);
-        setAbt('⚡ Analyze');
+        setAbt('Analyze');
       }
     }
   };
@@ -253,7 +254,7 @@ const App = () => {
         </div>
 
         {/* CENTER: Visualization */}
-        <div className="center-panel">
+        <div className="center-panel" style={{ zoom: 0.6 + (zoom - 1) * 0.2 }}>
           {/* Variable cards */}
           <VariableCards variables={pv} />
 
@@ -310,7 +311,7 @@ const App = () => {
         {/* RIGHT: Controls */}
         <div className="right-panel">
           <Controls
-            speed={spd} setSpeed={setSpd} zoom={1} setZoom={() => {}}
+            speed={spd} setSpeed={setSpd} zoom={zoom} setZoom={setZoom}
             cur={cur} totalSteps={steps.length} lang={lang} setLang={setLang}
             onExample={() => setShowTemplates(true)} onView={() => {}} onOk={() => {}}
             onPlay={onPlay} onStop={onStop} playing={playing}

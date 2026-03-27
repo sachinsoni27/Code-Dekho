@@ -104,7 +104,7 @@ const FlowChart = ({ flowData, currentStep }) => {
             <line x1="6.5" y1="13" x2="12" y2="16" stroke="#6b7280" strokeWidth="1" />
             <line x1="17.5" y1="13" x2="12" y2="16" stroke="#6b7280" strokeWidth="1" />
           </svg>
-          <span>Click <b>⚡ Analyze</b> to generate flow chart</span>
+          <span>Click <b>Analyze</b> to generate flow chart</span>
         </div>
       </div>
     );

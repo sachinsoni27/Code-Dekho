@@ -6,7 +6,7 @@ import React from 'react';
 const Header = ({ lang, setLang, theme, onToggleTheme, onAnalyze, spinning }) => {
   const langOptions = [
     { id: 'python', label: 'Python', icon: '🐍' },
-    { id: 'javascript', label: 'JavaScript', icon: '⚡' },
+    { id: 'javascript', label: 'JavaScript', icon: 'JS' },
     { id: 'java', label: 'Java', icon: '☕' },
     { id: 'c', label: 'C++', icon: '⚙️' },
   ];
@@ -42,7 +42,7 @@ const Header = ({ lang, setLang, theme, onToggleTheme, onAnalyze, spinning }) =>
           {spinning ? (
             <><span className="hd-spin"></span> Analyzing...</>
           ) : (
-            <><span className="hd-bolt">⚡</span> Analyze</>
+            <>Analyze</>
           )}
         </button>
         <button className="hd-theme" onClick={onToggleTheme} title="Toggle theme">
