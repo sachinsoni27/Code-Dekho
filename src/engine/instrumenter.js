@@ -178,7 +178,7 @@ export function instrument(code, ast) {
   const varList = [...varNames];
   const snapshotCode = varList.length > 0
     ? `(function(){var __v={};${varList.map(v => 
-        `try{if(typeof ${v}!=='undefined')__v['${v}']=JSON.parse(JSON.stringify(${v}))}catch(e){__v['${v}']=String(${v})}`
+        `try{if(typeof ${v}!== 'undefined')__v['${v}']=JSON.parse(JSON.stringify(${v}))}catch(e){__v['${v}']='<uninitialized_or_unserializable>'}`
       ).join(';')};return __v})()`
     : '{}';
 
