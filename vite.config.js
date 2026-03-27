@@ -1,22 +1,34 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import fs from 'fs'
+import path from 'path'
 
 // Plugin to handle /api/groq locally during development
 function groqApiPlugin() {
+  let apiKey = null;
+
   return {
     name: 'groq-api-proxy',
     configureServer(server) {
+      // Read API key from .env file directly
+      try {
+        const envPath = path.resolve(process.cwd(), '.env');
+        const envContent = fs.readFileSync(envPath, 'utf-8');
+        const match = envContent.match(/^GROQ_API_KEY=(.+)$/m);
+        if (match) apiKey = match[1].trim();
+        console.log('[groq-proxy] API key loaded:', apiKey ? 'YES' : 'NO');
+      } catch (e) {
+        console.error('[groq-proxy] Could not read .env file:', e.message);
+      }
+
       server.middlewares.use(async (req, res, next) => {
-        if (req.url !== '/api/groq' || req.method !== 'POST') {
+        if (!req.url.startsWith('/api/groq') || req.method !== 'POST') {
           return next();
         }
 
-        const env = loadEnv('development', process.cwd(), '');
-        const apiKey = env.GROQ_API_KEY;
-
         if (!apiKey) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'GROQ_API_KEY not set in .env' }));
+          res.end(JSON.stringify({ error: 'GROQ_API_KEY not found in .env file' }));
           return;
         }
 
@@ -43,7 +55,7 @@ function groqApiPlugin() {
           res.writeHead(response.ok ? 200 : response.status, { 'Content-Type': 'application/json' });
           res.end(data);
         } catch (error) {
-          console.error('[groq-proxy] Error:', error.message);
+          console.error('[groq-proxy] Fetch error:', error.message);
           res.writeHead(500, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: `Groq API request failed: ${error.message}` }));
         }
