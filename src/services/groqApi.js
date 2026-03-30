@@ -81,3 +81,36 @@ export async function analyzeCode(code, language) {
   const result = JSON.parse(cleaned);
   return result;
 }
+
+export async function detectLanguageWithAI(code) {
+  try {
+    const response = await fetch('/api/groq', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: 'You are a programming language detector. Analyze the following code snippet and return ONLY one of these exact words: "Python", "JavaScript", "Java", or "C++". Output nothing else, no markdown, no quotes, no explanation. If unsure, default to "Python".' },
+          { role: 'user', content: code.substring(0, 500) } // Send just enough code for detection to save tokens
+        ],
+        temperature: 0,
+        max_tokens: 10,
+      }),
+    });
+
+    if (!response.ok) return 'Python';
+
+    const data = await response.json();
+    let content = data.choices[0].message.content.replace(/['"`]/g, '').trim();
+
+    // Map common alternatives back to our exact keys
+    if (content.toLowerCase() === 'js' || content.toLowerCase() === 'javascript') return 'JavaScript';
+    if (content.toLowerCase() === 'c++' || content.toLowerCase() === 'cpp') return 'C++';
+    if (content.toLowerCase() === 'java') return 'Java';
+    
+    return 'Python'; // Default fallback
+  } catch (err) {
+    console.error("Language detection failed:", err);
+    return 'Python';
+  }
+}
