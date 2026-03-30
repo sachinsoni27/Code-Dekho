@@ -273,16 +273,78 @@ body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(r
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 @keyframes scaleIn{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
 
-/* ── Responsive ── */
-@media(max-width:1024px){
-  .app-layout{flex-direction:column;}
-  .left-panel,.center-panel,.right-panel{flex:none;width:100%;}
-  .right-panel{flex-direction:row;flex-wrap:wrap;gap:.5rem;}
-  .center-panel{max-height:none;}
-  .vis-row{flex-direction:column;}
+/* ── Responsive Architecture ── */
+
+/* Add horizontal scroll constraints on wide visualization blocks so they don't break flex containers */
+.dsa-visualizer, .code-trace, .flow-chart-board, .memory-view {
+  overflow-x: auto;
+  max-width: 100vw;
+  scrollbar-width: thin;
 }
-@media(max-width:600px){
-  .templates-grid{grid-template-columns:1fr;}
-  .hd-lang-selector{gap:2px;}
-  .hd-analyze{padding:.3rem .7rem;font-size:.72rem;}
+
+/* ── TABLETS & COMPACT LAPTOPS (<1024px) ── */
+@media(max-width:1024px) {
+  .app-layout { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+  .left-panel, .center-panel, .right-panel { flex: none; width: 100%; }
+  
+  /* Optimize right panel controls layout */
+  .right-panel { flex-direction: row; flex-wrap: wrap; gap: 0.6rem; align-items: stretch; }
+  .controls-panel { flex: 1; min-width: 280px; }
+  .timeline-panel { flex: 1; min-width: 280px; width: 100%; }
+
+  .center-panel { max-height: none; overflow: visible; }
+  .vis-row { flex-direction: column; }
+  
+  /* Keep CodeEditor tight on smaller screens so visualizer stays in view */
+  .ce-body { min-height: 220px; max-height: 40vh; }
+}
+
+/* ── MOBILE PHONES (<768px) ── */
+@media(max-width:768px) {
+  .app-header { flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem; justify-content: center; }
+  .hd-left, .hd-center, .hd-right { width: auto; justify-content: center; flex-wrap: wrap; }
+  
+  /* Hide words, keep icons for language labels on phone */
+  .hd-lang-label { display: none; }
+  .hd-lang { padding: 0.4rem; font-size: 0.8rem; }
+  .ce-lang-btn { font-size: 0.55rem; padding: 0.2rem 0.3rem; }
+  
+  /* Shrink header stats */
+  .hd-analyze { font-size: 0.75rem; padding: 0.35rem 0.8rem; }
+  
+  .ce-stats { flex-wrap: wrap; }
+  .ce-stat { font-size: 0.55rem; }
+  
+  .variable-cards { justify-content: center; }
+  
+  .templates-modal { padding: 0.8rem; width: 95%; max-height: 90vh; }
+  .templates-grid { grid-template-columns: 1fr; }
+  
+  /* Make play controls bulkier to tap */
+  .play-controls button { padding: 0.45rem 0.8rem; font-size: 0.8rem; }
+  
+  /* Adjust code line trace size */
+  .code-text { font-size: 0.65rem; }
+  .line-number { font-size: 0.6rem; width: 18px; }
+  
+  /* Shrink visualizer texts massively so large structures fit better */
+  .dsa-cell, .mv-cell { min-width: 24px; padding: 1px; }
+  .dsa-val, .mv-cell-val { font-size: 0.6rem; }
+  .dsa-idx, .mv-cell-idx { font-size: 0.4rem; }
+}
+
+/* ── SMALL PHONES (<480px) ── */
+@media(max-width:480px) {
+  .app-header { flex-direction: column; gap: 0.5rem; align-items: stretch; }
+  .hd-center { order: 3; margin-top: 0.2rem; }
+  
+  .controls-panel, .timeline-panel { min-width: 100%; flex: auto; }
+  
+  .lang-buttons button { flex: 1; text-align: center; }
+  .play-controls { justify-content: space-between; gap: 4px; }
+  .play-controls button { flex: 1; min-width: 0; padding: 0.4rem; }
+  
+  .ce-header { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+  .ce-lang-btns { width: 100%; justify-content: space-between; margin-top: 0.2rem; }
+  .ce-lang-btn { flex: 1; text-align: center; }
 }
