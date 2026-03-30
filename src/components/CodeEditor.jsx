@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
@@ -8,6 +8,7 @@ import { java } from '@codemirror/lang-java';
 import { cpp } from '@codemirror/lang-cpp';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language';
+import { detectLanguageWithAI } from '../services/groqApi';
 
 // ── Language extension map ──
 const langExtensions = {
@@ -82,6 +83,8 @@ const CodeEditor = ({
   const codeRef = useRef(code);
   codeRef.current = code;
 
+  const [detectingLang, setDetectingLang] = useState(false);
+
   // Line highlight extension
   const lineHighlightField = useRef(null);
 
@@ -98,6 +101,23 @@ const CodeEditor = ({
       }
     });
 
+    const domHandlers = EditorView.domEventHandlers({
+      paste(event, view) {
+        const pasteData = event.clipboardData?.getData('Text');
+        if (pasteData && pasteData.trim().length > 10) {
+          setDetectingLang(true);
+          detectLanguageWithAI(pasteData).then(detected => {
+            let mapped = 'python';
+            if (detected === 'JavaScript') mapped = 'javascript';
+            else if (detected === 'Java') mapped = 'java';
+            else if (detected === 'C++') mapped = 'c';
+            setLang(mapped);
+          }).catch(console.error).finally(() => setDetectingLang(false));
+        }
+        return false;
+      }
+    });
+
     const state = EditorState.create({
       doc: code,
       extensions: [
@@ -111,6 +131,7 @@ const CodeEditor = ({
         oneDark,
         codeDekhoTheme,
         updateListener,
+        domHandlers,
         EditorView.lineWrapping,
       ],
     });
@@ -208,7 +229,7 @@ const CodeEditor = ({
       <div className="ce-footer">
         <div className="ce-stats">
           <span className="ce-stat">{lines} lines</span>
-          <span className="ce-stat">{lang}</span>
+          <span className="ce-stat">{detectingLang ? 'Detecting AI...' : lang}</span>
           <span className="ce-stat">{chars} chars</span>
         </div>
         <button className="ce-analyze-btn" onClick={onAnalyze} disabled={spinning}>
