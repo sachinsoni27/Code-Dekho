@@ -6,7 +6,7 @@ const VariableCards = ({ variables }) => {
       {Object.entries(variables).map(([key, value]) => (
         <div key={key} className="var-card">
           <div className="var-label">{key}</div>
-          <div className="var-value">{value}</div>
+          <div className="var-value">{typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)}</div>
         </div>
       ))}
     </div>
