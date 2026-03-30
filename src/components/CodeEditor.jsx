@@ -170,7 +170,7 @@ const CodeEditor = ({
       const line = view.state.doc.line(currentLine);
       // Scroll to the line
       view.dispatch({
-        effects: EditorView.scrollIntoView(line.from, { y: 'center' }),
+        effects: EditorView.scrollIntoView(line.from, { y: 'nearest' }),
       });
     }
   }, [currentLine]);
